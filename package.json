@@ -6,7 +6,8 @@
   "scripts": {
     "eslint:fix": "eslint --fix --ext .js ./",
     "promise:debug": "node --inspect-brk=2893 ./Promise/debug.js",
-    "promise:test": "node ./Promise/test.js"
+    "promise:test": "node ./Promise/test.js",
+    "asyncAwait:debug": "node --inspect-brk=2893 ./AsyncFunction/debug.js"
   },
   "repository": {
     "type": "git",

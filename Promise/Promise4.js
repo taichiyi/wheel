@@ -127,7 +127,6 @@ function handle(self, deferred) {
 
 function handleResolved(self, deferred) {
   asap(function () {
-
     var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
     if (cb === null) {
       if (self._state === 1) {
