@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "eslint:fix": "eslint --fix --ext .js ./",
-    "promise:debug": "node --inspect-brk=2893 ./Promise/index.js",
+    "promise:debug": "node --inspect-brk=2893 ./Promise/debug.js",
     "promise:test": "node ./Promise/test.js"
   },
   "repository": {

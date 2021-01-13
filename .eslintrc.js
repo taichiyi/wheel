@@ -1,5 +1,5 @@
-const OFF = 0;
-const WARNNING = 2;
+// const OFF = 0;
+// const WARNNING = 2;
 const ERROR = 2;
 
 module.exports = {

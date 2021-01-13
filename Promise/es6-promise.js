@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
@@ -6,13 +7,13 @@
  * @version   4.1.0+f046478d
  */
 
-(function (global, factory) {
+(function(global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined'
     ? (module.exports = factory())
     : typeof define === 'function' && define.amd
     ? define(factory)
     : (global.ES6Promise = factory());
-})(this, function () {
+})(this, function() {
   'use strict';
 
   function objectOrFunction(x) {
@@ -28,7 +29,7 @@
   if (Array.isArray) {
     _isArray = Array.isArray;
   } else {
-    _isArray = function (x) {
+    _isArray = function(x) {
       return Object.prototype.toString.call(x) === '[object Array]';
     };
   }
@@ -82,7 +83,7 @@
   function useNextTick() {
     // node version 0.10.x displays a deprecation warning when nextTick is used recursively
     // see https://github.com/cujojs/when/issues/410 for details
-    return function () {
+    return function() {
       return process.nextTick(flush);
     };
   }
@@ -90,7 +91,7 @@
   // vertx
   function useVertxTimer() {
     if (typeof vertxNext !== 'undefined') {
-      return function () {
+      return function() {
         vertxNext(flush);
       };
     }
@@ -104,7 +105,7 @@
     var node = document.createTextNode('');
     observer.observe(node, { characterData: true });
 
-    return function () {
+    return function() {
       node.data = iterations = ++iterations % 2;
     };
   }
@@ -113,7 +114,7 @@
   function useMessageChannel() {
     var channel = new MessageChannel();
     channel.port1.onmessage = flush;
-    return function () {
+    return function() {
       return channel.port2.postMessage(0);
     };
   }
@@ -122,7 +123,7 @@
     // Store setTimeout reference so es6-promise will be unaffected by
     // other code modifying setTimeout (like sinon.useFakeTimers())
     var globalSetTimeout = setTimeout;
-    return function () {
+    return function() {
       return globalSetTimeout(flush, 1);
     };
   }
@@ -181,9 +182,9 @@
     var _state = parent._state;
 
     if (_state) {
-      (function () {
+      (function() {
         var callback = _arguments[_state - 1];
-        asap(function () {
+        asap(function() {
           return invokeCallback(_state, child, callback, parent._result);
         });
       })();
@@ -242,7 +243,9 @@
     return promise;
   }
 
-  var PROMISE_ID = Math.random().toString(36).substring(16);
+  var PROMISE_ID = Math.random()
+    .toString(36)
+    .substring(16);
 
   function noop() {}
 
@@ -280,12 +283,12 @@
   }
 
   function handleForeignThenable(promise, thenable, then$$1) {
-    asap(function (promise) {
+    asap(function(promise) {
       var sealed = false;
       var error = tryThen(
         then$$1,
         thenable,
-        function (value) {
+        function(value) {
           if (sealed) {
             return;
           }
@@ -296,7 +299,7 @@
             fulfill(promise, value);
           }
         },
-        function (reason) {
+        function(reason) {
           if (sealed) {
             return;
           }
@@ -323,10 +326,10 @@
       subscribe(
         thenable,
         undefined,
-        function (value) {
+        function(value) {
           return resolve(promise, value);
         },
-        function (reason) {
+        function(reason) {
           return reject(promise, reason);
         },
       );
@@ -550,13 +553,13 @@
     return new Error('Array Methods must be provided an Array');
   }
 
-  Enumerator$1.prototype._enumerate = function (input) {
+  Enumerator$1.prototype._enumerate = function(input) {
     for (var i = 0; this._state === PENDING && i < input.length; i++) {
       this._eachEntry(input[i], i);
     }
   };
 
-  Enumerator$1.prototype._eachEntry = function (entry, i) {
+  Enumerator$1.prototype._eachEntry = function(entry, i) {
     var c = this._instanceConstructor;
     var resolve$$1 = c.resolve;
 
@@ -574,7 +577,7 @@
         this._willSettleAt(promise, i);
       } else {
         this._willSettleAt(
-          new c(function (resolve$$1) {
+          new c(function(resolve$$1) {
             return resolve$$1(entry);
           }),
           i,
@@ -585,7 +588,7 @@
     }
   };
 
-  Enumerator$1.prototype._settledAt = function (state, i, value) {
+  Enumerator$1.prototype._settledAt = function(state, i, value) {
     var promise = this.promise;
 
     if (promise._state === PENDING) {
@@ -603,16 +606,16 @@
     }
   };
 
-  Enumerator$1.prototype._willSettleAt = function (promise, i) {
+  Enumerator$1.prototype._willSettleAt = function(promise, i) {
     var enumerator = this;
 
     subscribe(
       promise,
       undefined,
-      function (value) {
+      function(value) {
         return enumerator._settledAt(FULFILLED, i, value);
       },
-      function (reason) {
+      function(reason) {
         return enumerator._settledAt(REJECTED, i, reason);
       },
     );
@@ -739,11 +742,11 @@
     var Constructor = this;
 
     if (!isArray(entries)) {
-      return new Constructor(function (_, reject) {
+      return new Constructor(function(_, reject) {
         return reject(new TypeError('You must pass an array to race.'));
       });
     } else {
-      return new Constructor(function (resolve, reject) {
+      return new Constructor(function(resolve, reject) {
         var length = entries.length;
         for (var i = 0; i < length; i++) {
           Constructor.resolve(entries[i]).then(resolve, reject);

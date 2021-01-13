@@ -1,5 +1,6 @@
 const promisesAplusTests = require('promises-aplus-tests');
 const TestPromise = require('./');
+// const TestPromise = Promise;
 
 TestPromise.deferred = () => {
   const deferred = {};
