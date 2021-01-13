@@ -1,69 +1,5 @@
 'use strict';
 
-/*
-总结
-  每个 promise 只有一个 then。
-
-  promise 的 state 和 value 由 then 决定。
-    state
-      是根据调用 then 的参数 onFulFilled 或 onRejected 来决定。
-    value
-      根据 then 的来源
-        自身提供的
-          onFulfilled(x) => any | onRejected(x) => any，x 值为“父 Promise”的 value
-
-        外部提供的
-          onFulfilled(x) => x | onRejected(x) => x，x 值是 client 传的，x 值就是 promise 的 value
-
-  then 三要素
-    promise
-    onFulfilled
-    onRejected
-
-  then 的接口
-  interface Promise<T> {
-    then<TResult1 = T, TResult2 = never>(
-      onFulfilled?:
-        ((value: T) => TResult1 | PromiseLike<TResult1>) |
-        undefined |
-        null,
-      onRejected?:
-        ((value: any) => TResult2 | PromiseLike<TResult2>) |
-        undefined |
-        null,
-    ): Promise<TResult1 | TResult2>
-  }
-
-  promise/then 的 state 如果等于 3 则意味着 value 是个 promise/then，
-
-  promise 和 then 构成了一个链表
-
- ---------
-| promise |
- ---------
-            \
-             \  --------
-               | promise |
-                --------
-            \
-             \  --------
-               | promise |
-                --------
-                           \
-                            \  --------
-                              | promise |
-                               --------
-                           \
-                            \  --------
-                              | promise |
-                               --------
-                           \
-                            \  --------
-                              | promise |
-                               --------
-
- */
-
 // core.js
 
 var asap = function (fn) {
@@ -130,11 +66,6 @@ function Promise(fn) {
   this._value = null;
   this._deferreds = null;
 
-  /* 下面这行代码意味着
-
-    表达式为真时，fn 为 自身的 then，否则为 其他的 then
-    then 的 state 由 promise 决定，value 由 promise 和 then 决定。
-   */
   if (fn === noop) return;
 
   doResolve(fn, this);
@@ -160,16 +91,8 @@ function safeThen(self, onFulfilled, onRejected) {
   });
 }
 
-/*
-根据 then 的 state 处理“子 then”
-  已完成或拒绝
-    则直接添加到任务队列
-  等待中
-    添加到 promise 的 deferreds
- */
 function handle(self, deferred) {
   while (self._state === 3) {
-    // “子 then”换父亲
     self = self._value;
   }
   if (Promise._onHandle) {
@@ -199,30 +122,17 @@ function handle(self, deferred) {
     self._deferreds.push(deferred);
     return;
   }
-  // 当 _state 等于 0 时，不会将 promise 的 deferred 添加到异步队列
   handleResolved(self, deferred);
 }
 
-/*
-把 then 添加到异步队列
-处理 then 的 value
- */
 function handleResolved(self, deferred) {
   asap(function () {
-    // 这里的 self._state 不会等于 0
 
     var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
     if (cb === null) {
-      // 这个 then 至少一个 onRulfilled 和 onRejected 没传
       if (self._state === 1) {
-        // 这个 promise/then 的状态为 fulfilled
-        // onFulfilled 为函数
-        // onRejected 为 null
         resolve(deferred.promise, self._value);
       } else {
-        // 这个 promise/then 的状态为 rejected
-        // onRejected 为函数
-        // onFulfilled 为 null
         reject(deferred.promise, self._value);
       }
       return;
@@ -236,7 +146,6 @@ function handleResolved(self, deferred) {
   });
 }
 
-// 处理 promise/then 的 state，改为“完成/拒绝”
 function resolve(self, newValue) {
   // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
   if (newValue === self) {
@@ -268,7 +177,6 @@ function resolve(self, newValue) {
   finale(self);
 }
 
-// 处理 promise/then 的 state，改为“拒绝”
 function reject(self, newValue) {
   self._state = 2;
   self._value = newValue;
@@ -278,7 +186,6 @@ function reject(self, newValue) {
   finale(self);
 }
 
-// 处理，在这个 promise/then 完成或拒绝之前添加的 deferreds
 function finale(self) {
   if (self._deferredState === 1) {
     handle(self, self._deferreds);
