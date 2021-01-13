@@ -76,31 +76,29 @@
 
 'use strict';
 
-function noop() {}
-
 var IS_ERROR = {};
 var LAST_ERROR = null;
 
-function TcyPromise(fn) {
+function Promise1(then) {
   this._state = 0;
   this._value = null;
   this._deferreds = [];
 
   /* 下面这行代码意味着
 
-    表达式为真时，fn 为 自身的 then，否则为 其他的 then
+    表达式为真时，then 为 自身的 then，否则为 其他的 then
     then 的 state 由 promise 决定，value 由 promise 和 then 决定。
    */
-  if (fn === noop) return;
+  if (then === noop) return;
 
-  doResolve(fn, this);
+  doResolve(then, this);
 }
 
-function doResolve(fn, promise) {
+function doResolve(then, promise) {
   var done = false;
 
   var result = tryCallTwo(
-    fn,
+    then,
     function (value) {
       if (done) return;
       done = true;
@@ -122,21 +120,19 @@ function doResolve(fn, promise) {
 function tryCallTwo(fn, a, b) {
   try {
     return fn(a, b);
-  } catch (error) {
-    LAST_ERROR = error;
+  } catch (e) {
+    LAST_ERROR = e;
     return IS_ERROR;
   }
 }
 
 // 处理 promise 的 state，改为“完成/拒绝”
 function resolve(promise, x) {
-  // 2.3.1
   if (x === promise) {
-    reject(promise, new TypeError('If promise and x refer to the same object'));
+    reject(promise, new TypeError('...'));
     return;
   }
 
-  // 2.3.3
   if (x !== null && (typeof x === 'object' || typeof x === 'function')) {
     var then = getThen(x);
     if (then === IS_ERROR) {
@@ -144,11 +140,9 @@ function resolve(promise, x) {
       return;
     }
 
-    // 2.3.2
-    if (then === promise.then && x instanceof TcyPromise) {
+    if (then === promise.then && x instanceof Promise1) {
       promise._state = 3;
       promise._value = x;
-
       finale(promise);
       return;
     } else if (typeof then === 'function') {
@@ -157,44 +151,25 @@ function resolve(promise, x) {
     }
   }
 
-  if (promise._state !== 0) return;
   promise._state = 1;
   promise._value = x;
-
   finale(promise);
 }
 
 // 处理 promise 的 state，改为“拒绝”
 function reject(promise, x) {
-  if (promise._state !== 0) return;
   promise._state = 2;
   promise._value = x;
-
   finale(promise);
 }
 
 // 下面开始写 then 相关的代码
 
-TcyPromise.prototype.then = function (onFulfilled, onRejected) {
-  var promise2 = new TcyPromise(noop);
+Promise1.prototype.then = function (onFulfilled, onRejected) {
+  var promise2 = new Promise1(noop);
   handle(this, new Handler(onFulfilled, onRejected, promise2));
   return promise2;
 };
-
-function getThen(obj) {
-  try {
-    return obj.then;
-  } catch (error) {
-    LAST_ERROR = error;
-    return IS_ERROR;
-  }
-}
-
-function Handler(onFulfilled, onRejected, promise) {
-  this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-  this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-  this.promise = promise;
-}
 
 /*
 根据 "父 promise" 的 state 处理“子 promise”
@@ -224,7 +199,7 @@ function handle(promise, deferred) {
 function handleResolved(promise, deferred) {
   // 这里的 self._state 不会等于 0
 
-  assp(function () {
+  asap(function () {
     var cb = promise._state === 1 ? deferred.onFulfilled : deferred.onRejected;
     if (cb === null) {
       // 这个 then 至少一个 onRulfilled 和 onRejected 没传
@@ -248,18 +223,34 @@ function handleResolved(promise, deferred) {
   });
 }
 
+function Handler(onFulfilled, onRejected, promise) {
+  this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+  this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+  this.promise = promise;
+}
+
 function tryCallOne(fn, a) {
   try {
     return fn(a);
-  } catch (error) {
-    LAST_ERROR = error;
+  } catch (e) {
+    LAST_ERROR = e;
     return IS_ERROR;
   }
 }
-function assp(fn) {
+function noop() {}
+
+function asap(fn) {
   setTimeout(fn, 0);
 }
 
+function getThen(obj) {
+  try {
+    return obj.then;
+  } catch (e) {
+    LAST_ERROR = e;
+    return IS_ERROR;
+  }
+}
 // 处理，在这个 promise 完成或拒绝之前添加的 deferreds
 function finale(promise) {
   for (var i = 0; i < promise._deferreds.length; i++) {
@@ -268,4 +259,4 @@ function finale(promise) {
   promise._deferreds = [];
 }
 
-module.exports = TcyPromise;
+module.exports = Promise1;
