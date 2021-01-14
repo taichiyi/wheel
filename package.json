@@ -8,6 +8,7 @@
     "promise:debug": "node --inspect-brk=2893 ./Promise/debug.js",
     "promise:test": "node ./Promise/test.js",
     "currying:test": "jest ./Currying",
+    "sortingAlgorithm:test": "jest ./SortingAlgorithm",
     "asyncAwait:debug": "node --inspect-brk=2893 ./AsyncFunction/debug.js"
   },
   "repository": {
@@ -26,8 +27,5 @@
   },
   "dependencies": {
     "promises-aplus-tests": "^2.1.2"
-  },
-  "jest": {
-    "testRegex": "/test\\.js$"
   }
 }
