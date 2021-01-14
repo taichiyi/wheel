@@ -7,6 +7,7 @@
     "eslint:fix": "eslint --fix --ext .js ./",
     "promise:debug": "node --inspect-brk=2893 ./Promise/debug.js",
     "promise:test": "node ./Promise/test.js",
+    "currying:test": "jest ./Currying",
     "asyncAwait:debug": "node --inspect-brk=2893 ./AsyncFunction/debug.js"
   },
   "repository": {
@@ -20,9 +21,13 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^7.17.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1"
   },
   "dependencies": {
     "promises-aplus-tests": "^2.1.2"
+  },
+  "jest": {
+    "testRegex": "/test\\.js$"
   }
 }
