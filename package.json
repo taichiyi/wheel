@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "eslint:fix": "eslint --fix --ext .js ./",
+    "new:debug": "node --inspect-brk=2893 ./New/index.js",
+    "new:test": "jest ./New",
+    "extendsSuper:debug": "node --inspect-brk=2893 ./ExtendsSuper/index.js",
     "promise:debug": "node --inspect-brk=2893 ./Promise/debug.js",
     "promise:test": "node ./Promise/test.js",
     "currying:test": "jest ./Currying",
