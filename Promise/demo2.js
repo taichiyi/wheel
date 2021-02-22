@@ -1,14 +1,84 @@
-'use strict'
+/*
+总结
+  每个 promise 只有一个 then 函数。
+
+  promise 的 state 和 value 由 then 函数决定。
+    state
+      是根据调用 then 函数的参数 onFulFilled 或 onRejected 来决定。
+    value
+      根据 then 函数的来源
+        自身提供的
+          onFulfilled(x) => any | onRejected(x) => any
+          说明：x 值为“父 Promise”的 value
+
+        外部提供的
+          onFulfilled(x) => x | onRejected(x) => x
+          说明：x 值是 client 传的，x 值就是 promise 的 value
+
+  子 promise 三要素
+    promise(自身)
+    onFulfilled
+    onRejected
+
+  then 函数的接口
+  interface Promise<T> {
+    then<TResult1 = T, TResult2 = never>(
+      onFulfilled?:
+        ((value: T) => TResult1 | PromiseLike<TResult1>) |
+        undefined |
+        null,
+      onRejected?:
+        ((value: any) => TResult2 | PromiseLike<TResult2>) |
+        undefined |
+        null,
+    ): Promise<TResult1 | TResult2>
+  }
+
+  promise（称为 A）的 state 如果等于 3 则意味着 value 是个 promise（称为 B），B 将替换 A
+  防止 server 的 resolve 和 reject 被多次调用。
+  先完成外部提供 then 函数情况下的代码，再完成内部提供 then 函数情况下的代码。
+  then 函数是 server 执行的，then 函数的两个参数是 client 提供的，server 根据 then 函数的执行情况，选择一个参数进行处理
+  根据 then 函数的来源做不同的处理
+
+  promise 和 then 函数构成了一个链表
+ ---------
+| promise |
+ ---------
+            \
+             \  --------
+               | promise |
+                --------
+            \
+             \  --------
+               | promise |
+                --------
+                           \
+                            \  --------
+                              | promise |
+                               --------
+                           \
+                            \  --------
+                              | promise |
+                               --------
+                           \
+                            \  --------
+                              | promise |
+                               --------
+ */
 
 /*
-约定
+说明
+  只包含 promise 核心代码
 
-state
-  0: pending
-  1: fulfilled
-  2: rejected
-  3: 采用 value 的 state
+约定
+  state
+    0: pending
+    1: fulfilled
+    2: rejected
+    3: 采用 value 的 state
  */
+
+'use strict';
 
 function PromiseA(then) {
   this._state = 0
