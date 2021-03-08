@@ -14,7 +14,8 @@
     "sortingAlgorithm:test": "jest ./SortingAlgorithm",
     "asyncAwait:debug": "node --inspect-brk=2893 ./AsyncFunction/debug.js",
     "forOf:debug": "node --inspect-brk=2893 ./ForOf/index.js",
-    "forOf:test": "jest ./ForOf/forOf.test.js"
+    "forOf:test": "jest ./ForOf/forOf.test.js",
+    "virtualDOM:test": "jest ./VirtualDOM/virtualDOM.test.js"
   },
   "repository": {
     "type": "git",
