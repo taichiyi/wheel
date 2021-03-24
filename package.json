@@ -16,7 +16,8 @@
     "forOf:debug": "node --inspect-brk=2893 ./ForOf/index.js",
     "forOf:test": "jest ./ForOf/forOf.test.js",
     "virtualDOM:test": "jest ./VirtualDOM/virtualDOM.test.js",
-    "operatorPrecedence:test": "jest ./OperatorPrecedence/operatorPrecedence.test.js"
+    "operatorPrecedence:test": "jest ./OperatorPrecedence/operatorPrecedence.test.js",
+    "compose:test": "jest ./Compose/compose.test.js"
   },
   "repository": {
     "type": "git",
