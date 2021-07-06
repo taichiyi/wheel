@@ -1,6 +1,6 @@
 /*
 总结
-  每个 promise 只有一个 then 函数。
+  每个 promise 只受一个 then 函数影响。
 
   promise 的 state 和 value 由 then 函数决定。
     state
