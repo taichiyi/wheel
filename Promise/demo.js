@@ -9,11 +9,11 @@
       根据 then 函数的来源
         自身提供的
           onFulfilled(x) => any | onRejected(x) => any
-          说明：x 值为“父 Promise”的 value
+          (说明：x 值为“父 Promise”的 value)
 
         外部提供的
           onFulfilled(x) => x | onRejected(x) => x
-          说明：x 值是 client 传的，x 值就是 promise 的 value
+          (说明：x 值是 client 传的，x 值就是 promise 的 value)
 
   子 promise 三要素
     promise(自身)
@@ -120,6 +120,13 @@ function resolve(promise, value) {
       return
     }
 
+    if (value instanceof PromiseA) {
+      promise._state = 3
+      promise._value = value
+      performDeferred(promise)
+      return
+    }
+
     let then = null
     try {
       then = value.then
@@ -127,12 +134,7 @@ function resolve(promise, value) {
       reject(promise, err)
       return
     }
-    if (then === promise.then && value instanceof PromiseA) {
-      promise._state = 3
-      promise._value = value
-      performDeferred(promise)
-      return
-    } else if (typeof then === 'function') {
+    if (typeof then === 'function') {
       outerThenHandle(promise, then.bind(value))
       return
     }
@@ -142,6 +144,7 @@ function resolve(promise, value) {
   promise._state = 1
   performDeferred(promise)
 }
+
 function reject(promise, value) {
   promise._value = value
   promise._state = 2
@@ -164,10 +167,45 @@ PromiseA.prototype.then = function (onFulfilled, onRejected) {
   const childPromise = new PromiseA(isInnerThen)
   innerThenHandle(
     this,
-    new ChildPromiseHandler(childPromise, onFulfilled, onRejected)
+    new ChildPromiseInfo(childPromise, onFulfilled, onRejected)
   )
   return childPromise
 }
+
+function innerThenHandleImpl(parentPromise, childPromiseElements) {
+  const cb = parentPromise._state === 1
+    ? childPromiseElements.onFulfilled
+    : childPromiseElements.onRejected
+
+  // 判断处理函数是否有传
+  if (cb === null) {
+    if (parentPromise._state === 1) {
+      resolve(
+        childPromiseElements.promise,
+        parentPromise._value,
+      )
+      return
+    } else {
+      reject(
+        childPromiseElements.promise,
+        parentPromise._value,
+      )
+      return
+    }
+  }
+  try {
+    resolve(
+      childPromiseElements.promise,
+      cb(parentPromise._value),
+    )
+  } catch (err) {
+    reject(
+      childPromiseElements.promise,
+      err,
+    )
+  }
+}
+
 function innerThenHandle(parentPromise, childPromiseElements) {
   while (parentPromise._state === 3) {
     parentPromise = parentPromise._value
@@ -176,47 +214,20 @@ function innerThenHandle(parentPromise, childPromiseElements) {
     parentPromise._deferreds.push(childPromiseElements)
     return
   }
-  enqueueChildPromiseHandle(parentPromise, childPromiseElements)
+
+  const bindedInnerThenHandleImpl = innerThenHandleImpl.bind(null, parentPromise, childPromiseElements)
+  enqueueTask(bindedInnerThenHandleImpl)
 }
 
-function enqueueChildPromiseHandle(parentPromise, childPromiseElements) {
-  asap(function childPromiseHandle() {
-    const cb = parentPromise._state === 1 ? childPromiseElements.onFulfilled : childPromiseElements.onRejected
-    // 判断处理函数是否有传
-    if (cb === null) {
-      if (parentPromise._state === 1) {
-        resolve(
-          childPromiseElements.promise,
-          parentPromise._value,
-        )
-        return
-      } else {
-        reject(
-          childPromiseElements.promise,
-          parentPromise._value,
-        )
-        return
-      }
-    }
-    try {
-      resolve(
-        childPromiseElements.promise,
-        cb(parentPromise._value),
-      )
-    } catch (err) {
-      reject(
-        childPromiseElements.promise,
-        err,
-      )
-    }
-  })
+function enqueueTask(task) {
+  asap(task)
 }
 
 function asap(fn) {
   setTimeout(fn, 0)
 }
 
-function ChildPromiseHandler(promise, onFulfilled, onRejected) {
+function ChildPromiseInfo(promise, onFulfilled, onRejected) {
   this.promise = promise
   this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null
   this.onRejected = typeof onRejected === 'function' ? onRejected : null
