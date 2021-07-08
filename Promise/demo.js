@@ -153,13 +153,11 @@ function reject(promise, value) {
 }
 
 function performDeferred(parentPromise) {
-  for (let i = 0; i < parentPromise._deferreds.length; i++) {
-    innerThenHandle(
-      parentPromise,
-      parentPromise._deferreds[i]
-    )
+  const { _deferreds } = parentPromise;
+  let childPromiseInfo = undefined
+  while ((childPromiseInfo = _deferreds.shift()) !== undefined) {
+    innerThenHandle(parentPromise, childPromiseInfo)
   }
-  parentPromise._deferreds = []
 }
 
 function isInnerThen() { }
