@@ -182,25 +182,24 @@ function innerThenHandleImpl(parentPromise, childPromiseElements) {
         childPromiseElements.promise,
         parentPromise._value,
       )
-      return
     } else {
       reject(
         childPromiseElements.promise,
         parentPromise._value,
       )
-      return
     }
-  }
-  try {
-    resolve(
-      childPromiseElements.promise,
-      cb(parentPromise._value),
-    )
-  } catch (err) {
-    reject(
-      childPromiseElements.promise,
-      err,
-    )
+  } else {
+    try {
+      resolve(
+        childPromiseElements.promise,
+        cb(parentPromise._value),
+      )
+    } catch (err) {
+      reject(
+        childPromiseElements.promise,
+        err,
+      )
+    }
   }
 }
 
