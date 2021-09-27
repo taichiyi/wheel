@@ -4,6 +4,6 @@ const debouncing = (fn, period) => {
     if (timeOutId !== null) {
       clearTimeout(timeOutId)
     }
-    timeOutId = setTimeout(fn.bind(this), period, arguments)
+    timeOutId = setTimeout(fn.bind(this), period, ...arguments)
   }
 }

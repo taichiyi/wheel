@@ -1,33 +1,23 @@
 // 思路
 // 1. 概念，节流是一个周期内只能触发指定次数的限制函数调用频率的高阶函数。
 // 2. 重点，加锁和解锁
-// 3. 有 3 个形参，被节流函数、周期、次数
-// 4. 如何实现周期解锁
-// 5. 如何加锁
+// 3. 有 3 个形参：被节流函数、周期、最大次数
+// 4. 有 1 个内部状态：已执行次数
+// 5. 有 1 个方法：重置已执行次数
+
 
 // 节流
-const throttling = (fn, period, number = 1) => {
-  let hasLock = false
-  let runNumber = 0
-  let isRunInterval = false
-
-  const openLock = () => {
-    hasLock = false
-    runNumber = 0
-  }
+const throttling = (fn, period, max = 1) => {
+  let executed = 0;
+  const resetExecuted = () => executed = 0
 
   return function () {
-    if (isRunInterval === false) {
-      isRunInterval = true
-      setInterval(openLock, period)
+    if (executed === 0) {
+      setTimeout(resetExecuted, period)
     }
-    if (hasLock === false) {
-      runNumber++;
-      fn.apply(this, arguments);
-    }
-    const isCloseLock = runNumber === number
-    if (isCloseLock) {
-      hasLock = true
+    executed++;
+    if (executed <= max) {
+      fn.apply(this, arguments)
     }
   }
 }
