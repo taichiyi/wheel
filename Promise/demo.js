@@ -231,3 +231,31 @@ function ChildPromiseInfo(promise, onFulfilled, onRejected) {
 }
 
 module.exports = PromiseA
+
+PromiseA.all = function (array) {
+  return new Promise((resolve, reject) => {
+    const resolveValue = []
+    let arrayLength = array.length;
+    let resolveNumber = 0;
+
+    const handleResolve = index => value => {
+      resolveValue[index] = value;
+      resolveNumber++;
+      if (resolveNumber === arrayLength) {
+        resolve(resolveValue)
+      }
+    }
+    const handlePromise = (promise, index) => {
+      promise.then(
+        handleResolve(index),
+        reject,
+      )
+    }
+
+    if (arrayLength) {
+      array.forEach(handlePromise)
+    } else {
+      resolve(resolveValue);
+    }
+  })
+}
