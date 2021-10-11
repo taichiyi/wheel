@@ -3,8 +3,8 @@
 function currying(fn) {
   const args = [];
   return function f() {
-    for (let i = 0; i < arguments.length; i++) {
-      args.push(arguments[i]);
+    for (let item of arguments){
+      args.push(item)
     }
     if (args.length < fn.length) {
       return f;
