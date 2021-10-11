@@ -2,7 +2,7 @@
 `compose(f, g, h)`
 `(...args) => f(g(h(...args)))`
  */
-const compose = (...funcs) => {
+const compose1 = (...funcs) => {
   if (funcs.length === 0)
     return (args) => args
   if (funcs.length === 1)
